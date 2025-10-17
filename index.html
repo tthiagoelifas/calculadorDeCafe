@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculador de Café - Notion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #718096;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            align-items: end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        input {
+            padding: 10px 12px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 10px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            padding: 6px 10px;
+            font-size: 0.85em;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th {
+            background: #2d3748;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .best {
+            background: #c6f6d5;
+            font-weight: 600;
+            color: #22543d;
+        }
+
+        .worst {
+            background: #fed7d7;
+            font-weight: 600;
+            color: #742a2a;
+        }
+
+        .valor {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-export {
+            padding: 12px 20px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .btn-export:hover {
+            background: #38a169;
+        }
+
+        .btn-copy {
+            background: #ed8936;
+        }
+
+        .btn-copy:hover {
+            background: #dd6b20;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .modal-body {
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .modal-body pre {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 6px;
+            overflow: auto;
+            margin: 15px 0;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☕ Calculador de Café Personalizado</h1>
+        <p class="subtitle">Adicione seus cafés, atualize preços e exporte para o Notion</p>
+
+        <div class="success-message" id="successMsg"></div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="consumoDiario">Consumo Diário (gramas)</label>
+                <input type="number" id="consumoDiario" value="30" min="1">
+            </div>
+            <div class="control-group">
+                <label for="filtro">Filtrar por tipo</label>
+                <select id="filtro" style="padding: 10px 12px; border: 1.5px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                    <option value="">Todos</option>
+                    <option value="Tradicional">Tradicional</option>
+                    <option value="Gourmet">Gourmet</option>
+                    <option value="Premium">Premium</option>
+                </select>
+            </div>
+            <button onclick="mostrarModal('adicionar')">+ Adicionar Café</button>
+        </div>
+
+        <div id="tabelaContainer"></div>
+
+        <div class="export-buttons">
+            <button class="btn-export" onclick="copiarParaClipboard()">📋 Copiar (Markdown)</button>
+            <button class="btn-export btn-copy" onclick="gerarCSV()">📥 Baixar (CSV)</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Adicionar Café</div>
+            <div id="modalBody"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button onclick="salvarCafe()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cafes = JSON.parse(localStorage.getItem('cafes')) || [
+            { id: 1, nome: "Pilão Tradicional", tipo: "Tradicional", grao: "Moído", embalagem: 500, preco: 35.99 },
+            { id: 2, nome: "Rancheiro Tradicional", tipo: "Tradicional", grao: "Moído", embalagem: 500, preco: 39.99 },
+            { id: 3, nome: "Gourmet Dark Roast", tipo: "Gourmet", grao: "Moído", embalagem: 250, preco: 25.99 },
+            { id: 4, nome: "Café Gourmet Sul de Minas", tipo: "Gourmet", grao: "Moído", embalagem: 250, preco: 26.49 }
+        ];
+        
+        let proximoId = Math.max(...cafes.map(c => c.id)) + 1;
+        let cafeEditando = null;
+
+        function salvarCafes() {
+            localStorage.setItem('cafes', JSON.stringify(cafes));
+        }
+
+        function mostrarTabela() {
+            const consumo = parseInt(document.getElementById('consumoDiario').value) || 30;
+            const filtro = document.getElementById('filtro').value;
+            
+            let cafesFiltrados = cafes;
+            if (filtro) {
+                cafesFiltrados = cafes.filter(c => c.tipo === filtro);
+            }
+
+            if (cafesFiltrados.length === 0) {
+                document.getElementById('tabelaContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🤔</div>
+                        <p>Nenhum café encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const resultados = cafesFiltrados.map(cafe => {
+                const custoPorGrama = cafe.preco / cafe.embalagem;
+                const custoDiario = (consumo * custoPorGrama).toFixed(2);
+                const custoMensal = (consumo * 30 * custoPorGrama).toFixed(2);
+                const custoAnual = (consumo * 365 * custoPorGrama).toFixed(2);
+
+                return {
+                    ...cafe,
+                    custoDiario: parseFloat(custoDiario),
+                    custoMensal: parseFloat(custoMensal),
+                    custoAnual: parseFloat(custoAnual)
+                };
+            }).sort((a, b) => a.custoAnual - b.custoAnual);
+
+            const menorAnual = resultados[0].custoAnual;
+            const maiorAnual = resultados[resultados.length - 1].custoAnual;
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Café</th>
+                            <th>Tipo</th>
+                            <th>Apresentação</th>
+                            <th>Preço</th>
+                            <th>Custo/Dia</th>
+                            <th>Custo/Mês</th>
+                            <th>Custo/Ano</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            resultados.forEach((cafe, idx) => {
+                const isMelhor = cafe.custoAnual === menorAnual;
+                const isPior = cafe.custoAnual === maiorAnual;
+                const classe = isMelhor ? 'best' : (isPior ? 'worst' : '');
+
+                html += `
+                    <tr class="${classe}">
+                        <td>${cafe.nome}</td>
+                        <td>${cafe.tipo}</td>
+                        <td>${cafe.grao}</td>
+                        <td>R$ ${cafe.preco.toFixed(2)}</td>
+                        <td><span class="valor">R$ ${cafe.custoDiario.toFixed(2)}</span></td>
+                        <td>R$ ${cafe.custoMensal.toFixed(2)}</td>
+                        <td>R$ ${cafe.custoAnual.toFixed(2)}</td>
+                        <td>
+                            <button style="padding: 6px 10px; margin-right: 5px;" onclick="editarCafe(${cafe.id})">✏️</button>
+                            <button class="btn-danger" onclick="deletarCafe(${cafe.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('tabelaContainer').innerHTML = html;
+        }
+
+        function mostrarModal(acao, id) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            if (acao === 'adicionar') {
+                cafeEditando = null;
+                modalTitle.textContent = '➕ Adicionar Café';
+                modalBody.innerHTML = `
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Nome do Café</label>
+                        <input type="text" id="inputNome" placeholder="Ex: Pilão Tradicional">
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Tipo</label>
+                        <select id="inputTipo" style="padding: 10px 12px; border: 1.5px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                            <option>Tradicional</option>
+                            <option>Gourmet</option>
+                            <option>Premium</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Apresentação</label>
+                        <select id="inputGrao" style="padding: 10px 12px; border: 1.5px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                            <option>Moído</option>
+                            <option>Grão</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Apresentação</label>
+                        <select id="inputGrao" style="padding: 10px 12px; border: 1.5px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                            <option>Moído</option>
+                            <option>Grão</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Embalagem (gramas)</label>
+                        <input type="number" id="inputEmbalagem" value="250" min="50">
+                    </div>
+                    <div class="control-group">
+                        <label>Preço (R$)</label>
+                        <input type="number" id="inputPreco" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                `;
+            } else {
+                const cafe = cafes.find(c => c.id === id);
+                cafeEditando = id;
+                modalTitle.textContent = '✏️ Editar Café';
+                modalBody.innerHTML = `
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Nome do Café</label>
+                        <input type="text" id="inputNome" value="${cafe.nome}">
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Tipo</label>
+                        <select id="inputTipo" style="padding: 10px 12px; border: 1.5px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                            <option ${cafe.tipo === 'Tradicional' ? 'selected' : ''}>Tradicional</option>
+                            <option ${cafe.tipo === 'Gourmet' ? 'selected' : ''}>Gourmet</option>
+                            <option ${cafe.tipo === 'Premium' ? 'selected' : ''}>Premium</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Apresentação</label>
+                        <select id="inputGrao" style="padding: 10px 12px; border: 1.5px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                            <option ${cafe.grao === 'Moído' ? 'selected' : ''}>Moído</option>
+                            <option ${cafe.grao === 'Grão' ? 'selected' : ''}>Grão</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 15px;">
+                        <label>Embalagem (gramas)</label>
+                        <input type="number" id="inputEmbalagem" value="${cafe.embalagem}" min="50">
+                    </div>
+                    <div class="control-group">
+                        <label>Preço (R$)</label>
+                        <input type="number" id="inputPreco" step="0.01" min="0" value="${cafe.preco}">
+                    </div>
+                `;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function salvarCafe() {
+            const nome = document.getElementById('inputNome').value.trim();
+            const tipo = document.getElementById('inputTipo').value;
+            const grao = document.getElementById('inputGrao').value;
+            const embalagem = parseInt(document.getElementById('inputEmbalagem').value);
+            const preco = parseFloat(document.getElementById('inputPreco').value);
+
+            if (!nome || !embalagem || !preco) {
+                alert('Preencha todos os campos');
+                return;
+            }
+
+            if (cafeEditando) {
+                const idx = cafes.findIndex(c => c.id === cafeEditando);
+                cafes[idx] = { id: cafeEditando, nome, tipo, grao, embalagem, preco };
+            } else {
+                cafes.push({ id: proximoId++, nome, tipo, grao, embalagem, preco });
+            }
+
+            salvarCafes();
+            fecharModal();
+            mostrarTabela();
+            mostrarSucesso();
+        }
+
+        function editarCafe(id) {
+            mostrarModal('editar', id);
+        }
+
+        function deletarCafe(id) {
+            if (confirm('Tem certeza que deseja deletar este café?')) {
+                cafes = cafes.filter(c => c.id !== id);
+                salvarCafes();
+                mostrarTabela();
+            }
+        }
+
+        function mostrarSucesso() {
+            const msg = document.getElementById('successMsg');
+            msg.textContent = '✅ Salvo com sucesso!';
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }
+
+        function copiarParaClipboard() {
+            const consumo = parseInt(document.getElementById('consumoDiario').value) || 30;
+            let markdown = `# Comparativo de Cafés\n\n`;
+            markdown += `**Consumo diário:** ${consumo}g\n\n`;
+            markdown += `| Café | Tipo | Preço | Custo/Dia | Custo/Mês | Custo/Ano |\n`;
+            markdown += `|------|------|-------|----------|-----------|----------|\n`;
+
+            cafes.forEach(cafe => {
+                const custoPorGrama = cafe.preco / cafe.embalagem;
+                const custoDiario = (consumo * custoPorGrama).toFixed(2);
+                const custoMensal = (consumo * 30 * custoPorGrama).toFixed(2);
+                const custoAnual = (consumo * 365 * custoPorGrama).toFixed(2);
+
+                markdown += `| ${cafe.nome} | ${cafe.tipo} | R$ ${cafe.preco.toFixed(2)} | R$ ${custoDiario} | R$ ${custoMensal} | R$ ${custoAnual} |\n`;
+            });
+
+            navigator.clipboard.writeText(markdown).then(() => {
+                const msg = document.getElementById('successMsg');
+                msg.textContent = '✅ Copiado para a área de transferência! Cole no Notion.';
+                msg.classList.add('show');
+                setTimeout(() => msg.classList.remove('show'), 4000);
+            });
+        }
+
+        function gerarCSV() {
+            const consumo = parseInt(document.getElementById('consumoDiario').value) || 30;
+            let csv = 'Café,Tipo,Preço,Embalagem,Custo Diário,Custo Mensal,Custo Anual\n';
+
+            cafes.forEach(cafe => {
+                const custoPorGrama = cafe.preco / cafe.embalagem;
+                const custoDiario = (consumo * custoPorGrama).toFixed(2);
+                const custoMensal = (consumo * 30 * custoPorGrama).toFixed(2);
+                const custoAnual = (consumo * 365 * custoPorGrama).toFixed(2);
+
+                csv += `"${cafe.nome}","${cafe.tipo}",${cafe.preco},${cafe.embalagem},${custoDiario},${custoMensal},${custoAnual}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'comparativo-cafes.csv';
+            a.click();
+        }
+
+        document.getElementById('consumoDiario').addEventListener('change', mostrarTabela);
+        document.getElementById('filtro').addEventListener('change', mostrarTabela);
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) fecharModal();
+        });
+
+        mostrarTabela();
+    </script>
+</body>
+</html>
